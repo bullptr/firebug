@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>California Fires (Interactive Map)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="d3.min.js"></script>
+  <script src="topojson-client.min.js"></script>
+  <style>
+    :root { --bg:#0b0b0c; --card:#141417; --ink:#e7e7ea; --muted:#9aa0a6; --border:#232327; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+    header { padding:18px 20px; border-bottom:1px solid var(--border); background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); }
+    h1 { font-size:18px; margin:0; }
+    #chart { max-width:980px; margin:18px auto 28px; padding:14px; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
+    svg { width:100%; height:auto; display:block; }
+    .state-outline, .zip-outline { vector-effect: non-scaling-stroke; }
+    .state-outline { fill:none; stroke:#e7e7ea; stroke-width:1.2px; pointer-events:none; opacity:.65; }
+    .zip-outline { fill:none; stroke:#555861; stroke-width:.6px; opacity:.5; }
+    .zip-outline:hover { stroke:#8ab4f8; opacity:.85; }
+    .point { stroke:#0b0b0c; stroke-width:0.5px; }
+
+    .legend { font-size:12px; fill:var(--ink); cursor:move; }
+    .legend .handle { cursor:move; }
+    .legend * { vector-effect: non-scaling-stroke; }
+
+    .tooltip {
+      position:fixed; pointer-events:none; background:#111; border:1px solid var(--border); color:#fff;
+      padding:8px 10px; border-radius:10px; font-size:12px; box-shadow:0 6px 20px rgba(0,0,0,.35);
+      transform: translate(-50%, calc(-100% - 12px)); opacity:0; transition:opacity .15s ease; white-space:nowrap;
+    }
+    .pill { font:11px monospace; color:#fff; background:#c51414; padding:1px 6px; border-radius:999px; }
+
+    .controls { max-width:980px; margin:10px auto 0; padding:0 14px; display:grid; grid-template-columns: 1fr; gap:10px; }
+    .row { display:flex; gap:20px; align-items:flex-end; flex-wrap:wrap; }
+
+    .file-block { display:flex; flex-direction:column; }
+    .file-block label { color:var(--ink); font-size:13px; margin-bottom:4px; }
+    .row input[type="file"] {
+      background:#1b1b20; color:var(--ink); border:1px solid var(--border);
+      border-radius:10px; padding:6px 10px;
+    }
+
+    .toggles { display:flex; gap:14px; align-items:center; }
+    label.toggle { display:inline-flex; align-items:center; gap:6px; cursor:pointer; color:var(--ink); }
+
+    .sliders { display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap:12px; }
+    .slider { background:#1b1b20; border:1px solid var(--border); border-radius:12px; padding:8px 10px; }
+    .slider label { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    .slider output { color:var(--ink); font-variant-numeric: tabular-nums; }
+    .slider input[type="range"]{ width:100%; }
+
+    .zoom-buttons { margin-left:auto; display:flex; gap:8px; }
+    .zoom-buttons button {
+      background:#1b1b20; color:var(--ink); border:1px solid var(--border);
+      border-radius:10px; padding:6px 10px; cursor:pointer;
+    }
+    .zoom-buttons button:hover { background:#202026; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>California Fires</h1>
+  </header>
+
+  <div class="controls">
+    <div class="row">
+      <div class="file-block">
+        <label for="csvFile">Dataset (CSV)</label>
+        <input id="csvFile" type="file" accept=".csv" />
+      </div>
+
+      <div class="file-block">
+        <label for="zipJsonFile">ZIP Line File (GeoJSON)</label>
+        <input id="zipJsonFile" type="file" accept=".json" />
+      </div>
+
+      <div class="toggles">
+        <label class="toggle">
+          <input id="zipToggle" type="checkbox" checked />
+          Show ZIP lines
+        </label>
+      </div>
+
+      <div class="zoom-buttons">
+        <button id="zoomIn">+</button>
+        <button id="zoomOut">–</button>
+        <button id="zoomReset">Reset</button>
+      </div>
+    </div>
+
+    <div class="sliders">
+      <div class="slider">
+        <label>Bubble size <output id="radiusOut">1.0×</output></label>
+        <input id="radiusSlider" type="range" min="0.5" max="3" step="0.1" value="1">
+      </div>
+      <div class="slider">
+        <label>Color opacity <output id="opacityOut">0.90</output></label>
+        <input id="opacitySlider" type="range" min="0.1" max="1" step="0.05" value="0.9">
+      </div>
+      <div class="slider">
+        <label>Probability threshold <output id="thresholdOut">0%</output></label>
+        <input id="thresholdSlider" type="range" min="0" max="1" step="0.01" value="0">
+      </div>
+      <div class="slider">
+        <label>ZIP line opacity <output id="zipOpacityOut">0.50</output></label>
+        <input id="zipOpacitySlider" type="range" min="0" max="1" step="0.05" value="0.5">
+      </div>
+    </div>
+  </div>
+
+  <div id="chart"></div>
+
+  <script>
+
+  const latKey   = "Census2020_INTPTLAT20";
+  const lonKey   = "Census2020_INTPTLON20";
+  const nameKey  = "California_FireName";
+  const dateKey  = "Date";
+  const valueKey = "FirePredicted_Prob"; 
+
+  const container = d3.select("#chart");
+  const W = Math.min(980, Math.max(360, window.innerWidth - 40));
+  const H = Math.round(W * 1.15);
+
+  const svg = container.append("svg").attr("viewBox", [0, 0, W, H]);
+
+ 
+  const gRoot = svg.append("g").attr("class", "zoom-root");
+  const gMap  = gRoot.append("g");
+  const gZip  = gRoot.append("g");
+  const gPts  = gRoot.append("g");
+
+
+  const gLegend = svg.append("g").attr("class", "legend");
+
+  const tooltip = d3.select("body").append("div").attr("class", "tooltip");
+  const fmtPct = d3.format(".0%");
+
+  let radiusScaleFactor = 1, colorOpacity = 0.9, valueThreshold = 0; // 0..1
+  let projection, path;
+  let dataPoints = [], rScale, colorScale;
+
+  let zipGeo = null;
+  let zipDrawn = false;
+
+  const legendState = { x: 20, y: H - 50, width: 200, height: 12 };
+
+  const zoom = d3.zoom()
+    .scaleExtent([0.2, 12])
+    .on("zoom", (event) => { gRoot.attr("transform", event.transform); });
+  svg.call(zoom);
+
+  const zoomScaleBy = f => svg.transition().duration(250).call(zoom.scaleBy, f);
+  const zoomReset   = () => svg.transition().duration(250).call(zoom.transform, d3.zoomIdentity);
+  document.getElementById("zoomIn").onclick = () => zoomScaleBy(1.25);
+  document.getElementById("zoomOut").onclick = () => zoomScaleBy(1 / 1.25);
+  document.getElementById("zoomReset").onclick = () => zoomReset();
+
+  d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json").then(us => {
+    const geoms = us.objects.counties.geometries.filter(g => String(g.id).startsWith("06"));
+    const caOutlineGeom = topojson.merge(us, geoms);
+    const caOutlineFeature = { type: "Feature", geometry: caOutlineGeom };
+    projection = d3.geoMercator().fitSize([W, H], caOutlineFeature);
+    path = d3.geoPath(projection);
+    gMap.append("path").attr("class", "state-outline").attr("d", path(caOutlineFeature));
+  });
+
+  function loadZipLayer() {
+    if (!zipGeo) {
+      return;
+    }
+
+    if (zipDrawn) {
+      gZip.style("display", "");
+      return;
+    }
+
+    gZip.selectAll("path.zip-outline")
+      .data(zipGeo.features || [])
+      .join("path")
+      .attr("class", "zip-outline")
+      .attr("d", d => path(d))
+      .append("title")
+      .text(d =>
+        (d.properties &&
+          (d.properties.ZCTA5CE20 ||
+           d.properties.ZCTA5CE10 ||
+           d.properties.zip)) ||
+        "ZCTA"
+      );
+
+    zipDrawn = true;
+  }
+
+  function hideZipLayer() {
+    gZip.style("display", "none");
+  }
+
+  document.getElementById("zipToggle").addEventListener("change", e => {
+    if (e.target.checked) loadZipLayer();
+    else hideZipLayer();
+  });
+
+  document.getElementById("zipJsonFile").addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        zipGeo = JSON.parse(reader.result);
+        zipDrawn = false; 
+        if (document.getElementById("zipToggle").checked) {
+          loadZipLayer();
+        }
+      } catch (err) {
+        console.error("Failed to parse ZIP JSON:", err);
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  const rS = document.getElementById("radiusSlider"),
+        oS = document.getElementById("opacitySlider"),
+        tS = document.getElementById("thresholdSlider"),
+        zS = document.getElementById("zipOpacitySlider");
+  const rO = document.getElementById("radiusOut"),
+        oO = document.getElementById("opacityOut"),
+        tO = document.getElementById("thresholdOut"),
+        zO = document.getElementById("zipOpacityOut");
+
+  rS.oninput = e => {
+    radiusScaleFactor = +e.target.value;
+    rO.textContent = radiusScaleFactor.toFixed(1) + "×";
+    updateStyling();
+  };
+  oS.oninput = e => {
+    colorOpacity = +e.target.value;
+    oO.textContent = colorOpacity.toFixed(2);
+    updateStyling();
+  };
+  tS.oninput = e => {
+    valueThreshold = +e.target.value;
+    tO.textContent = fmtPct(valueThreshold);
+    updateStyling();
+  };
+  zS.oninput = e => {
+    const v = +e.target.value;
+    zO.textContent = v.toFixed(2);
+    gZip.selectAll(".zip-outline").style("opacity", v);
+  };
+
+  function parseNumber(v) {
+    if (v == null) return null;
+    const n = +String(v).replace(/,/g, "");
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function showTip(e, row, v) {
+    const name = row[nameKey] ?? "Fire";
+    const date = row[dateKey];
+    const p = (v == null) ? null : Math.max(0, Math.min(1, v));
+    tooltip.html(`
+      <strong>${name}</strong><br>
+      ${p == null ? "" : `<span class="pill">${fmtPct(p)}</span> Probability`}
+      ${date ? `<div>${dateKey}: ${date}</div>` : ""}
+    `)
+    .style("left", e.clientX + "px")
+    .style("top", e.clientY + "px")
+    .style("opacity", 1);
+  }
+  function hideTip() {
+    tooltip.style("opacity", 0);
+  }
+
+  function drawLegend(domain, label) {
+    gLegend.selectAll("*").remove();
+
+    const legendWidth  = Math.min(260, W * 0.45);
+    const legendHeight = 12;
+    legendState.width  = legendWidth;
+    legendState.height = legendHeight;
+
+    if (!drawLegend._initialized) {
+      legendState.x = 20;
+      legendState.y = H - legendHeight - 38;
+      drawLegend._initialized = true;
+    }
+
+    const defs = svg.select("defs").empty() ? svg.append("defs") : svg.select("defs");
+    defs.selectAll("#legend-gradient").remove();
+    const grad = defs.append("linearGradient").attr("id", "legend-gradient");
+    grad.append("stop").attr("offset", "0%").attr("stop-color", "#ffffff");
+    grad.append("stop").attr("offset", "100%").attr("stop-color", "#ff0000");
+
+    gLegend.attr("transform", `translate(${legendState.x}, ${legendState.y})`);
+
+    gLegend.append("text")
+      .attr("x", 0).attr("y", -6)
+      .attr("class", "legend")
+      .attr("font-weight", 600)
+      .text(label);
+
+    gLegend.append("rect")
+      .attr("class", "handle")
+      .attr("x", 0).attr("y", 0)
+      .attr("width", legendWidth).attr("height", legendHeight)
+      .attr("fill", "url(#legend-gradient)")
+      .attr("stroke", "#2a2a2e");
+
+    const legendX = d3.scaleLinear().domain(domain).range([0, legendWidth]);
+    gLegend.append("g")
+      .attr("transform", `translate(0, ${legendHeight})`)
+      .call(d3.axisBottom(legendX).ticks(5).tickFormat(d3.format(".0%")))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll("text").attr("dy", 14));
+
+    const drag = d3.drag()
+      .on("start", () => gLegend.classed("dragging", true))
+      .on("drag", (event) => {
+        legendState.x = Math.max(0, Math.min(W - legendState.width,  legendState.x + event.dx));
+        const maxY = H - 6, minY = 10;
+        legendState.y = Math.max(minY, Math.min(maxY, legendState.y + event.dy));
+        gLegend.attr("transform", `translate(${legendState.x}, ${legendState.y})`);
+      })
+      .on("end", () => gLegend.classed("dragging", false));
+    gLegend.call(drag);
+  }
+
+  function updateStyling() {
+    gPts.selectAll("circle.point")
+      .attr("r", p => p.v == null ? 3.5 * radiusScaleFactor : rScale(p.v) * radiusScaleFactor)
+      .attr("fill", p => {
+        if (p.v == null) return `rgba(255,102,102,${colorOpacity})`;
+        const clamped = Math.max(0, Math.min(1, p.v));
+        return d3.color(colorScale(clamped)).formatRgb();
+      })
+      .attr("fill-opacity", colorOpacity)
+      .attr("display", p => (p.v != null && p.v < valueThreshold) ? "none" : null);
+  }
+
+  function renderPoints(rows) {
+    if (!projection) {
+      setTimeout(() => renderPoints(rows), 30);
+      return;
+    }
+    if (!rows?.length) {
+      gPts.selectAll("*").remove();
+      return;
+    }
+
+    dataPoints = rows.map(d => {
+      const lat = parseNumber(d[latKey]);
+      const lon = parseNumber(d[lonKey]);
+      const v   = parseNumber(d[valueKey]);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+      const xy = projection([lon, lat]);
+      if (!xy) return null;
+      return { d, x: xy[0], y: xy[1], v };
+    }).filter(Boolean);
+
+    const valueDomain = [0, 1];
+
+    colorScale = d3.scaleLinear().domain(valueDomain).range(["#ffffff", "#ff0000"]);
+    rScale = d3.scaleSqrt().domain(valueDomain).range([2, 9]);
+
+    gPts.selectAll("circle.point")
+      .data(dataPoints)
+      .join("circle")
+      .attr("class", "point")
+      .attr("cx", p => p.x)
+      .attr("cy", p => p.y)
+      .on("mousemove", (e, p) => showTip(e, p.d, p.v))
+      .on("mouseleave", hideTip)
+      .append("title")
+      .text(p => {
+        const name = p.d[nameKey] ?? "Fire";
+        const pv = (p.v == null) ? "" : ` · ${fmtPct(Math.max(0, Math.min(1, p.v)))}`;
+        return `${name}${pv}`;
+      });
+
+    updateStyling();
+    drawLegend(valueDomain, "Probability");
+  }
+
+  document.getElementById("csvFile").addEventListener("change", e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const rows = d3.csvParse(reader.result);
+        renderPoints(rows);
+      } catch (err) {
+        console.error("Failed to parse CSV:", err);
+      }
+    };
+    reader.readAsText(file);
+  });
+  </script>
+</body>
+</html>
