@@ -1,0 +1,29 @@
+# Firebug: California Wildfire Risk and Impact Analysis
+
+California faces escalating wildfire threats driven by climate change, prolonged drought, and expanding urban development. These fires endanger lives, destroy property, harm ecosystems, and compromise air quality for vulnerable populations.
+
+Firebug is a GIS-powered visualization platform that leverages machine learning to predict wildfire risk across California. By providing data-driven, real-time analytics, Firebug empowers communities, emergency responders, and policymakers to make informed decisions about wildfire preparedness, mitigation strategies, land-use planning, and insurance policies.
+
+# Installation
+
+Install using docker:
+
+```shell
+docker build -t firebug .
+```
+
+# Execution
+
+Run using docker:
+
+```shell
+docker run -p 8080:8080 firebug
+```
+
+Then open your browser and navigate to `http://localhost:8080`.
+
+<hr/>
+
+<small>**Project:** Georgia Tech CSE 6242: Data and Visual Analytics Team 4 (Fall 2024)</small>
+
+<small>**Contributors:** Adhavan Ramkumar, Ahmed Husain, Bukhaar Mahamed, Gautham Pavuluri, Stephen Lester, Whitney Snead</small>
