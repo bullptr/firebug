@@ -1,5 +1,5 @@
-<div style="display: flex; justify-content: center; margin-bottom: 30px;">
-  <img src="app/public/firebug-logo.png" width="32" height="32" alt="Firebug Logo">
+<div align="center">
+  <img src="app/public/firebug-logo.png" width="64" height="64" alt="Firebug Logo">
 </div>
 
 # Firebug: California Wildfire Risk and Impact Analysis
