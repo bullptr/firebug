@@ -1,0 +1,12 @@
+[project]
+name = "firebug"
+version = "0.1.0"
+description = "California Wildfire Risk and Impact Analysis"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.121.2",
+    "httpx>=0.28.1",
+    "pandas>=2.3.3",
+    "uvicorn>=0.38.0",
+]
