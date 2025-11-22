@@ -32,3 +32,10 @@ serve:
 	@cls
 	@echo "Serving..."
 	@uv run uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+
+docker:
+	@cls
+	@echo "Building Docker image..."
+	@docker build -t firebug .
+	@echo "Running Docker container..."
+	@docker run -p 8080:80 firebug
