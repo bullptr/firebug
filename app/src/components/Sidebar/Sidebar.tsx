@@ -13,6 +13,7 @@ import {
   Divider,
   LinearProgress,
   Alert,
+  ChipDelete,
 } from '@mui/joy';
 import { SegmentedControl } from '../SegmentedControl/SegmentedControl';
 import { FIRE_CAUSES } from '../../constants';
@@ -171,13 +172,7 @@ export const Sidebar = memo(({
                           size="sm"
                           variant="soft"
                           endDecorator={
-                            <Box
-                              component="span"
-                              onClick={() => onYearsChange(selectedYears.filter(y => y !== year))}
-                              sx={{ cursor: 'pointer', ml: 0.5 }}
-                            >
-                              ×
-                            </Box>
+                            <ChipDelete onDelete={() => onYearsChange(selectedYears.filter(y => y !== year))} />
                           }
                         >
                           {year}
@@ -216,13 +211,7 @@ export const Sidebar = memo(({
                           size="sm"
                           variant="soft"
                           endDecorator={
-                            <Box
-                              component="span"
-                              onClick={() => onCausesChange(selectedCauses.filter(c => c !== cause))}
-                              sx={{ cursor: 'pointer', ml: 0.5 }}
-                            >
-                              ×
-                            </Box>
+                            <ChipDelete onDelete={() => onCausesChange(selectedCauses.filter(c => c !== cause))} />
                           }
                         >
                           {FIRE_CAUSES[cause] || cause}
@@ -261,13 +250,7 @@ export const Sidebar = memo(({
                           size="sm"
                           variant="soft"
                           endDecorator={
-                            <Box
-                              component="span"
-                              onClick={() => onAgenciesChange(selectedAgencies.filter(a => a !== agency))}
-                              sx={{ cursor: 'pointer', ml: 0.5 }}
-                            >
-                              ×
-                            </Box>
+                            <ChipDelete onDelete={() => onAgenciesChange(selectedAgencies.filter(a => a !== agency))} />
                           }
                         >
                           {agency}
