@@ -156,7 +156,7 @@ export const Sidebar = memo(({
                     placeholder="All years"
                     value={selectedYears}
                     onChange={(_, newValue) => onYearsChange(newValue as number[])}
-                    sx={{ mb: 1 }}
+                    sx={{ mb: 1, maxWidth: 340 }}
                   >
                     {allYears.map(year => (
                       <Option key={year} value={year}>
@@ -195,7 +195,7 @@ export const Sidebar = memo(({
                     placeholder="All causes"
                     value={selectedCauses}
                     onChange={(_, newValue) => onCausesChange(newValue as number[])}
-                    sx={{ mb: 1 }}
+                    sx={{ mb: 1, maxWidth: 340 }}
                   >
                     {allCauses.map(cause => (
                       <Option key={cause} value={cause}>
@@ -234,7 +234,7 @@ export const Sidebar = memo(({
                     placeholder="All agencies"
                     value={selectedAgencies}
                     onChange={(_, newValue) => onAgenciesChange(newValue as string[])}
-                    sx={{ mb: 1 }}
+                    sx={{ mb: 1, maxWidth: 340 }}
                   >
                     {allAgencies.map(agency => (
                       <Option key={agency} value={agency}>
