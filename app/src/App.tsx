@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import { Sheet, Box } from '@mui/joy';
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapContainer } from 'react-leaflet';
 
-import { CALIFORNIA_CENTER } from './constants';
+import { CALIFORNIA_CENTER, DEFAULT_PROBABILITY_THRESHOLD } from './constants';
 import { useFireData } from './hooks/useFireData';
 import { usePredictedPoints } from './hooks/usePredictedPoints';
 import { Timeline } from './components/Timeline/Timeline';
@@ -14,6 +14,8 @@ import { MapViewportTracker } from './components/Map/MapViewportTracker';
 import { ResetViewButton } from './components/Map/ResetViewButton';
 import { FirePolygon } from './components/Map/FirePolygon';
 import { PredictedPoint } from './components/Map/PredictedPoint';
+import ModeToggle from './components/ModeToggle';
+import DynamicTileLayer from './components/Map/DynamicTileLayer';
 
 export default function App() {
   const {
@@ -48,7 +50,7 @@ export default function App() {
     setSelectedCauses([]);
     setSelectedYears([]);
     setNameFilter('');
-    setProbabilityThreshold(0.2);
+    setProbabilityThreshold(DEFAULT_PROBABILITY_THRESHOLD);
   }, [setSelectedAgencies, setSelectedCauses, setSelectedYears, setNameFilter, setProbabilityThreshold]);
 
   const handleViewModeChange = useCallback((value: string) => {
@@ -58,6 +60,7 @@ export default function App() {
   const topBarHeight = 140;
 
   return (
+
     <Sheet sx={{ minHeight: '100dvh', display: 'grid', gridTemplateRows: `${topBarHeight}px 1fr` }}>
       <Timeline timeline={timeline} height={topBarHeight} />
 
@@ -73,11 +76,7 @@ export default function App() {
             zoomControl={false}
             preferCanvas={true}
           >
-            <TileLayer
-              // @ts-ignore
-              attribution='&copy; OpenStreetMap contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+            <DynamicTileLayer />
 
             <MapViewportTracker onViewportChange={handleViewportChange} />
 
@@ -89,7 +88,18 @@ export default function App() {
               <PredictedPoint key={`predicted-${idx}`} point={point} idx={idx} />
             ))}
 
-            <ResetViewButton center={CALIFORNIA_CENTER} />
+            <Box sx={{
+              position: 'absolute',
+              left: 10,
+              bottom: 10,
+              zIndex: 500,
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 1,
+            }}>
+              <ResetViewButton center={CALIFORNIA_CENTER} />
+              <ModeToggle />
+            </Box>
           </MapContainer>
 
           <Sidebar

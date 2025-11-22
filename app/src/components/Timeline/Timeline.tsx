@@ -2,7 +2,8 @@ import { memo, useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import { ticks as d3ticks, tickStep } from 'd3-array';
-import { Box, Sheet } from '@mui/joy';
+import { Box, Divider, Sheet } from '@mui/joy';
+import { useColorScheme } from '@mui/joy/styles';
 import { FILTER_KEYS, COLORS } from '../../constants';
 
 interface TimelineProps {
@@ -11,6 +12,7 @@ interface TimelineProps {
 }
 
 export const Timeline = memo(({ timeline, height = 140 }: TimelineProps) => {
+  const { mode, systemMode } = useColorScheme();
   const chartOption = useMemo(() => {
     const max = Math.max(
       0,
@@ -83,11 +85,13 @@ export const Timeline = memo(({ timeline, height = 140 }: TimelineProps) => {
     <Sheet>
       <Box sx={{ width: '100%', height }}>
         <ReactECharts
+          theme={mode == "system" ? systemMode : mode}
           option={chartOption}
           style={{ width: '100%', height: '100%' }}
           notMerge
           lazyUpdate
         />
+        <Divider sx={{ zIndex: 999 }} />
       </Box>
     </Sheet>
   );

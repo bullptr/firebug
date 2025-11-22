@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import debounce from 'lodash.debounce';
 import type { FireIncident, PredictedFire, ViewportBounds, FilterKey } from '../types';
 import { toFilterKey, startOfWeekISO, parseAlarmDate } from '../utils';
-import { FILTER_KEYS } from '../constants';
+import { DEFAULT_PROBABILITY_THRESHOLD, FILTER_KEYS } from '../constants';
 
 export const useFireData = () => {
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,7 @@ export const useFireData = () => {
   const [selectedCauses, setSelectedCauses] = useState<number[]>([]);
   const [selectedAgencies, setSelectedAgencies] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'Historic' | 'Predicted'>('Historic');
-  const [probabilityThreshold, setProbabilityThreshold] = useState(0.19);
+  const [probabilityThreshold, setProbabilityThreshold] = useState(DEFAULT_PROBABILITY_THRESHOLD);
   const [viewport, setViewport] = useState<ViewportBounds | null>(null);
   const [allYears, setAllYears] = useState<number[]>([]);
   const [allCauses, setAllCauses] = useState<number[]>([]);

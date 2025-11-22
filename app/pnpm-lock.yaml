@@ -84,6 +84,9 @@ importers:
       '@types/d3-scale':
         specifier: ^4.0.9
         version: 4.0.9
+      '@types/leaflet':
+        specifier: ^1.9.21
+        version: 1.9.21
       '@types/lodash.debounce':
         specifier: ^4.0.9
         version: 4.0.9
@@ -950,6 +953,9 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+
+  '@types/leaflet@1.9.21':
+    resolution: {integrity: sha512-TbAd9DaPGSnzp6QvtYngntMZgcRk+igFELwR2N99XZn7RXUdKgsXMR+28bUO0rPsWp8MIu/f47luLIQuSLYv/w==}
 
   '@types/lodash.debounce@4.0.9':
     resolution: {integrity: sha512-Ma5JcgTREwpLRwMM+XwBR7DaWe96nC38uCBDFKZWbNKD+osjVzdpnUSwBcqCptrp16sSOLBAUb50Car5I0TCsQ==}
@@ -2589,6 +2595,10 @@ snapshots:
   '@types/geojson@7946.0.16': {}
 
   '@types/json-schema@7.0.15': {}
+
+  '@types/leaflet@1.9.21':
+    dependencies:
+      '@types/geojson': 7946.0.16
 
   '@types/lodash.debounce@4.0.9':
     dependencies:

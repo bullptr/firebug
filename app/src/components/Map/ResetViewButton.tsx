@@ -19,7 +19,7 @@ export const ResetViewButton = memo(({ center, zoom = 6 }: ResetViewButtonProps)
       variant="soft"
       color="neutral"
       onClick={handleReset}
-      sx={{ position: 'absolute', left: 10, bottom: 10, zIndex: 500, bgcolor: 'background.body' }}
+      sx={{ bgcolor: 'background.body' }}
     >
       Reset Zoom
     </Button>
