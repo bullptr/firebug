@@ -38,7 +38,40 @@ export const Timeline = memo(({ timeline, height = 140 }: TimelineProps) => {
 
     const option: EChartsOption = {
       animation: true,
-      tooltip: { trigger: 'axis' },
+      tooltip: {
+        trigger: 'axis',
+        confine: true,
+        position: function (point, _params, _dom, _rect, size) {
+          const tooltipWidth = size.contentSize[0];
+          const tooltipHeight = size.contentSize[1];
+          const chartWidth = size.viewSize[0];
+          const chartHeight = size.viewSize[1];
+
+          let x = point[0];
+          let y = 10; // default top position
+
+          // keep tooltip horizontally within bounds
+          if (x + tooltipWidth + 10 > chartWidth) {
+            x = chartWidth - tooltipWidth - 10;
+          }
+          if (x < 10) {
+            x = 10;
+          }
+
+          // keep tooltip vertically within bounds
+          if (y + tooltipHeight + 10 > chartHeight) {
+            y = chartHeight - tooltipHeight - 10;
+          }
+
+          return [x, y];
+        },
+        axisPointer: {
+          type: 'shadow',
+          shadowStyle: {
+            opacity: 0.1
+          }
+        }
+      },
       legend: {
         top: 8,
         left: 8,
