@@ -12,6 +12,7 @@ import {
   Slider,
   Divider,
   LinearProgress,
+  Alert,
 } from '@mui/joy';
 import { SegmentedControl } from '../SegmentedControl/SegmentedControl';
 import { FIRE_CAUSES } from '../../constants';
@@ -91,6 +92,13 @@ export const Sidebar = memo(({
             Reset
           </Button>
         </Stack>
+
+        {error && (
+          <Typography level="body-sm" color="danger">
+            {/* {error} */}
+            <Alert size="sm" color="danger">Error: Unable to load data. Try refreshing the page.</Alert>
+          </Typography>
+        )}
 
         <Stack gap={1} flexWrap="wrap">
           {/* Name Search Filter - Historic only */}
@@ -284,12 +292,6 @@ export const Sidebar = memo(({
             </a>
           </Typography>
         </Stack>
-
-        {error && (
-          <Typography level="body-sm" color="danger">
-            {error}
-          </Typography>
-        )}
       </Stack>
     </Sheet>
   );
