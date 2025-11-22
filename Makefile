@@ -1,6 +1,12 @@
-.PHONY: all front back build serve
+.PHONY: all setup seed front back build serve
 
-all: front back
+all: setup
+
+setup:
+	@cls
+	@echo "Setting up the development environment..."
+	@uv sync
+	@cd app && pnpm install
 
 seed:
 	@cls
