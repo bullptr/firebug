@@ -2,7 +2,7 @@
 
 all: front back
 
-seed_db:
+seed:
 	@cls
 	@echo "Seeding the database..."
 	@uv run ./scripts/seed_db.py
@@ -20,9 +20,7 @@ back:
 build:
 	@cls
 	@echo "Building front-end..."
-	@pnpm run build
-	@echo "Building back-end..."
-	@uv build
+	@cd app && pnpm run build
 
 serve:
 	@cls
