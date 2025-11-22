@@ -4,7 +4,7 @@
 
 # Firebug: California Wildfire Risk and Impact Analysis
 
-## Description
+## DESCRIPTION
 
 California faces escalating wildfire threats driven by climate change, prolonged drought, and expanding urban development. These fires endanger lives, destroy property, harm ecosystems, and compromise air quality for vulnerable populations.
 
@@ -14,7 +14,7 @@ Firebug is a GIS-powered visualization tool that leverages machine learning to p
 
 **Contributors:** Adhavan Ramkumar, Ahmed Husain, Bukhaar Mahamed, Gautham Pavuluri, Stephen Lester, Whitney Snead
 
-## Installation
+## INSTALLATION
 
 In the root of the project, run the following command to build the Docker image:
 
@@ -22,7 +22,7 @@ In the root of the project, run the following command to build the Docker image:
 docker build -t firebug .
 ```
 
-## Execution
+## EXECUTION
 
 Execute the following command to run the application using Docker:
 
