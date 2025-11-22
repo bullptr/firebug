@@ -15,12 +15,12 @@ seed:
 
 front:
 	@cls
-	@echo "Starting front-end development server..."
+	@echo "Running front-end dev server..."
 	@cd app && pnpm run dev
 
 back:
 	@cls
-	@echo "Starting back-end development server..."
+	@echo "Running back-end dev server..."
 	@uv run --env-file .env main.py
 
 build:
