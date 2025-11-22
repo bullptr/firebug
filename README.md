@@ -16,6 +16,8 @@ Firebug is a GIS-powered visualization tool that leverages machine learning to p
 
 ## INSTALLATION
 
+Prerequisites: [Docker](https://docs.docker.com/get-started/get-docker/) installed on your machine.
+
 In the root of the project, run the following command to build the Docker image:
 
 ```shell

@@ -24,6 +24,8 @@ Stephen Lester, Whitney Snead
 INSTALLATION
 ------------
 
+Prerequisites: Docker (https://docs.docker.com/get-started/get-docker/) installed on your machine.
+
 In the root of the project, run the following command to build the Docker image:
 
     docker build -t firebug .
