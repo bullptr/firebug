@@ -18,7 +18,7 @@ Firebug is a GIS-powered visualization tool that leverages machine learning to p
 
 Prerequisites: [Docker](https://docs.docker.com/get-started/get-docker/) installed on your machine.
 
-In the root of the project, run the following command to build the Docker image:
+In the root directory, run the following command to build the Docker image:
 
 ```shell
 docker build -t firebug .
@@ -26,10 +26,15 @@ docker build -t firebug .
 
 ## EXECUTION
 
-Execute the following command to run the application using Docker:
+In the root directory, execute the following command to run the application using Docker:
 
 ```shell
 docker run -p 8080:80 firebug
 ```
 
 Then open your browser and navigate to `http://localhost:8080`.
+
+## DATA AND TRAINING
+
+The data, training, and GIS processing scripts can be found under the `data/` and `notebooks/` directories.
+A subset of the trained model weights are included in the `database/firebug.db` SQLite database.
