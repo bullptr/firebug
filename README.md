@@ -8,7 +8,9 @@
 
 California faces escalating wildfire threats driven by climate change, prolonged drought, and expanding urban development. These fires endanger lives, destroy property, harm ecosystems, and compromise air quality for vulnerable populations.
 
-Firebug is a GIS-powered visualization tool that leverages machine learning to predict wildfire risk across California. By providing data-driven, real-time analytics, Firebug empowers communities, emergency responders, and policymakers to make informed decisions about wildfire preparedness, mitigation strategies, land-use planning, and insurance policies.
+Firebug is a GIS-powered visualization tool that leverages machine learning to predict wildfire risk across California. By providing data-driven, real-time analytics, Firebug empowers communities, emergency responders, and policymakers to make informed decisions about wildfire preparedness, mitigation strategies, land-use planning, and insurance policies. [Read more](docs/california-wildfire-risk-and-impact-analysis.pdf)
+
+![Firebug dashboard](assets/dashboard-light.png)
 
 **Project:** Georgia Tech CSE 6242: Data and Visual Analytics Team 4 (Fall 2025)
 
